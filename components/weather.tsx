@@ -1,8 +1,8 @@
-"use client";
+'use client'
 
-import cx from "classnames";
-import { format, isWithinInterval } from "date-fns";
-import { useEffect, useState } from "react";
+import cx from 'classnames'
+import { format, isWithinInterval } from 'date-fns'
+import { useEffect, useState } from 'react'
 
 const SunIcon = ({ size = 40 }: { size?: number }) => (
   <svg fill="none" height={size} viewBox="0 0 24 24" width={size}>
@@ -58,7 +58,7 @@ const SunIcon = ({ size = 40 }: { size?: number }) => (
       y2="4.22"
     />
   </svg>
-);
+)
 
 const MoonIcon = ({ size = 40 }: { size?: number }) => (
   <svg fill="none" height={size} viewBox="0 0 24 24" width={size}>
@@ -67,7 +67,7 @@ const MoonIcon = ({ size = 40 }: { size?: number }) => (
       fill="currentColor"
     />
   </svg>
-);
+)
 
 const CloudIcon = ({ size = 24 }: { size?: number }) => (
   <svg fill="none" height={size} viewBox="0 0 24 24" width={size}>
@@ -78,160 +78,160 @@ const CloudIcon = ({ size = 24 }: { size?: number }) => (
       strokeWidth="2"
     />
   </svg>
-);
+)
 
 type WeatherAtLocation = {
-  latitude: number;
-  longitude: number;
-  generationtime_ms: number;
-  utc_offset_seconds: number;
-  timezone: string;
-  timezone_abbreviation: string;
-  elevation: number;
-  cityName?: string;
+  latitude: number
+  longitude: number
+  generationtime_ms: number
+  utc_offset_seconds: number
+  timezone: string
+  timezone_abbreviation: string
+  elevation: number
+  cityName?: string
   current_units: {
-    time: string;
-    interval: string;
-    temperature_2m: string;
-  };
+    time: string
+    interval: string
+    temperature_2m: string
+  }
   current: {
-    time: string;
-    interval: number;
-    temperature_2m: number;
-  };
+    time: string
+    interval: number
+    temperature_2m: number
+  }
   hourly_units: {
-    time: string;
-    temperature_2m: string;
-  };
+    time: string
+    temperature_2m: string
+  }
   hourly: {
-    time: string[];
-    temperature_2m: number[];
-  };
+    time: string[]
+    temperature_2m: number[]
+  }
   daily_units: {
-    time: string;
-    sunrise: string;
-    sunset: string;
-  };
+    time: string
+    sunrise: string
+    sunset: string
+  }
   daily: {
-    time: string[];
-    sunrise: string[];
-    sunset: string[];
-  };
-};
+    time: string[]
+    sunrise: string[]
+    sunset: string[]
+  }
+}
 
 const SAMPLE = {
   latitude: 37.763_283,
   longitude: -122.412_86,
   generationtime_ms: 0.027_894_973_754_882_812,
   utc_offset_seconds: 0,
-  timezone: "GMT",
-  timezone_abbreviation: "GMT",
+  timezone: 'GMT',
+  timezone_abbreviation: 'GMT',
   elevation: 18,
-  current_units: { time: "iso8601", interval: "seconds", temperature_2m: "°C" },
-  current: { time: "2024-10-07T19:30", interval: 900, temperature_2m: 29.3 },
-  hourly_units: { time: "iso8601", temperature_2m: "°C" },
+  current_units: { time: 'iso8601', interval: 'seconds', temperature_2m: '°C' },
+  current: { time: '2024-10-07T19:30', interval: 900, temperature_2m: 29.3 },
+  hourly_units: { time: 'iso8601', temperature_2m: '°C' },
   hourly: {
     time: [
-      "2024-10-07T00:00",
-      "2024-10-07T01:00",
-      "2024-10-07T02:00",
-      "2024-10-07T03:00",
-      "2024-10-07T04:00",
-      "2024-10-07T05:00",
-      "2024-10-07T06:00",
-      "2024-10-07T07:00",
-      "2024-10-07T08:00",
-      "2024-10-07T09:00",
-      "2024-10-07T10:00",
-      "2024-10-07T11:00",
-      "2024-10-07T12:00",
-      "2024-10-07T13:00",
-      "2024-10-07T14:00",
-      "2024-10-07T15:00",
-      "2024-10-07T16:00",
-      "2024-10-07T17:00",
-      "2024-10-07T18:00",
-      "2024-10-07T19:00",
-      "2024-10-07T20:00",
-      "2024-10-07T21:00",
-      "2024-10-07T22:00",
-      "2024-10-07T23:00",
-      "2024-10-08T00:00",
-      "2024-10-08T01:00",
-      "2024-10-08T02:00",
-      "2024-10-08T03:00",
-      "2024-10-08T04:00",
-      "2024-10-08T05:00",
-      "2024-10-08T06:00",
-      "2024-10-08T07:00",
-      "2024-10-08T08:00",
-      "2024-10-08T09:00",
-      "2024-10-08T10:00",
-      "2024-10-08T11:00",
-      "2024-10-08T12:00",
-      "2024-10-08T13:00",
-      "2024-10-08T14:00",
-      "2024-10-08T15:00",
-      "2024-10-08T16:00",
-      "2024-10-08T17:00",
-      "2024-10-08T18:00",
-      "2024-10-08T19:00",
-      "2024-10-08T20:00",
-      "2024-10-08T21:00",
-      "2024-10-08T22:00",
-      "2024-10-08T23:00",
-      "2024-10-09T00:00",
-      "2024-10-09T01:00",
-      "2024-10-09T02:00",
-      "2024-10-09T03:00",
-      "2024-10-09T04:00",
-      "2024-10-09T05:00",
-      "2024-10-09T06:00",
-      "2024-10-09T07:00",
-      "2024-10-09T08:00",
-      "2024-10-09T09:00",
-      "2024-10-09T10:00",
-      "2024-10-09T11:00",
-      "2024-10-09T12:00",
-      "2024-10-09T13:00",
-      "2024-10-09T14:00",
-      "2024-10-09T15:00",
-      "2024-10-09T16:00",
-      "2024-10-09T17:00",
-      "2024-10-09T18:00",
-      "2024-10-09T19:00",
-      "2024-10-09T20:00",
-      "2024-10-09T21:00",
-      "2024-10-09T22:00",
-      "2024-10-09T23:00",
-      "2024-10-10T00:00",
-      "2024-10-10T01:00",
-      "2024-10-10T02:00",
-      "2024-10-10T03:00",
-      "2024-10-10T04:00",
-      "2024-10-10T05:00",
-      "2024-10-10T06:00",
-      "2024-10-10T07:00",
-      "2024-10-10T08:00",
-      "2024-10-10T09:00",
-      "2024-10-10T10:00",
-      "2024-10-10T11:00",
-      "2024-10-10T12:00",
-      "2024-10-10T13:00",
-      "2024-10-10T14:00",
-      "2024-10-10T15:00",
-      "2024-10-10T16:00",
-      "2024-10-10T17:00",
-      "2024-10-10T18:00",
-      "2024-10-10T19:00",
-      "2024-10-10T20:00",
-      "2024-10-10T21:00",
-      "2024-10-10T22:00",
-      "2024-10-10T23:00",
-      "2024-10-11T00:00",
-      "2024-10-11T01:00",
-      "2024-10-11T02:00",
-      "2024-10-11T03:00",
+      '2024-10-07T00:00',
+      '2024-10-07T01:00',
+      '2024-10-07T02:00',
+      '2024-10-07T03:00',
+      '2024-10-07T04:00',
+      '2024-10-07T05:00',
+      '2024-10-07T06:00',
+      '2024-10-07T07:00',
+      '2024-10-07T08:00',
+      '2024-10-07T09:00',
+      '2024-10-07T10:00',
+      '2024-10-07T11:00',
+      '2024-10-07T12:00',
+      '2024-10-07T13:00',
+      '2024-10-07T14:00',
+      '2024-10-07T15:00',
+      '2024-10-07T16:00',
+      '2024-10-07T17:00',
+      '2024-10-07T18:00',
+      '2024-10-07T19:00',
+      '2024-10-07T20:00',
+      '2024-10-07T21:00',
+      '2024-10-07T22:00',
+      '2024-10-07T23:00',
+      '2024-10-08T00:00',
+      '2024-10-08T01:00',
+      '2024-10-08T02:00',
+      '2024-10-08T03:00',
+      '2024-10-08T04:00',
+      '2024-10-08T05:00',
+      '2024-10-08T06:00',
+      '2024-10-08T07:00',
+      '2024-10-08T08:00',
+      '2024-10-08T09:00',
+      '2024-10-08T10:00',
+      '2024-10-08T11:00',
+      '2024-10-08T12:00',
+      '2024-10-08T13:00',
+      '2024-10-08T14:00',
+      '2024-10-08T15:00',
+      '2024-10-08T16:00',
+      '2024-10-08T17:00',
+      '2024-10-08T18:00',
+      '2024-10-08T19:00',
+      '2024-10-08T20:00',
+      '2024-10-08T21:00',
+      '2024-10-08T22:00',
+      '2024-10-08T23:00',
+      '2024-10-09T00:00',
+      '2024-10-09T01:00',
+      '2024-10-09T02:00',
+      '2024-10-09T03:00',
+      '2024-10-09T04:00',
+      '2024-10-09T05:00',
+      '2024-10-09T06:00',
+      '2024-10-09T07:00',
+      '2024-10-09T08:00',
+      '2024-10-09T09:00',
+      '2024-10-09T10:00',
+      '2024-10-09T11:00',
+      '2024-10-09T12:00',
+      '2024-10-09T13:00',
+      '2024-10-09T14:00',
+      '2024-10-09T15:00',
+      '2024-10-09T16:00',
+      '2024-10-09T17:00',
+      '2024-10-09T18:00',
+      '2024-10-09T19:00',
+      '2024-10-09T20:00',
+      '2024-10-09T21:00',
+      '2024-10-09T22:00',
+      '2024-10-09T23:00',
+      '2024-10-10T00:00',
+      '2024-10-10T01:00',
+      '2024-10-10T02:00',
+      '2024-10-10T03:00',
+      '2024-10-10T04:00',
+      '2024-10-10T05:00',
+      '2024-10-10T06:00',
+      '2024-10-10T07:00',
+      '2024-10-10T08:00',
+      '2024-10-10T09:00',
+      '2024-10-10T10:00',
+      '2024-10-10T11:00',
+      '2024-10-10T12:00',
+      '2024-10-10T13:00',
+      '2024-10-10T14:00',
+      '2024-10-10T15:00',
+      '2024-10-10T16:00',
+      '2024-10-10T17:00',
+      '2024-10-10T18:00',
+      '2024-10-10T19:00',
+      '2024-10-10T20:00',
+      '2024-10-10T21:00',
+      '2024-10-10T22:00',
+      '2024-10-10T23:00',
+      '2024-10-11T00:00',
+      '2024-10-11T01:00',
+      '2024-10-11T02:00',
+      '2024-10-11T03:00'
     ],
     temperature_2m: [
       36.6, 32.8, 29.5, 28.6, 29.2, 28.2, 27.5, 26.6, 26.5, 26, 25, 23.5, 23.9,
@@ -241,102 +241,102 @@ const SAMPLE = {
       17, 16.7, 16.2, 15.6, 15.2, 15, 15, 15.1, 14.8, 14.8, 14.9, 14.7, 14.8,
       15.3, 16.2, 17.9, 19.6, 20.5, 21.6, 21, 20.7, 19.3, 18.7, 18.4, 17.9,
       17.3, 17, 17, 16.8, 16.4, 16.2, 16, 15.8, 15.7, 15.4, 15.4, 16.1, 16.7,
-      17, 18.6, 19, 19.5, 19.4, 18.5, 17.9, 17.5, 16.7, 16.3, 16.1,
-    ],
+      17, 18.6, 19, 19.5, 19.4, 18.5, 17.9, 17.5, 16.7, 16.3, 16.1
+    ]
   },
   daily_units: {
-    time: "iso8601",
-    sunrise: "iso8601",
-    sunset: "iso8601",
+    time: 'iso8601',
+    sunrise: 'iso8601',
+    sunset: 'iso8601'
   },
   daily: {
     time: [
-      "2024-10-07",
-      "2024-10-08",
-      "2024-10-09",
-      "2024-10-10",
-      "2024-10-11",
+      '2024-10-07',
+      '2024-10-08',
+      '2024-10-09',
+      '2024-10-10',
+      '2024-10-11'
     ],
     sunrise: [
-      "2024-10-07T07:15",
-      "2024-10-08T07:16",
-      "2024-10-09T07:17",
-      "2024-10-10T07:18",
-      "2024-10-11T07:19",
+      '2024-10-07T07:15',
+      '2024-10-08T07:16',
+      '2024-10-09T07:17',
+      '2024-10-10T07:18',
+      '2024-10-11T07:19'
     ],
     sunset: [
-      "2024-10-07T19:00",
-      "2024-10-08T18:58",
-      "2024-10-09T18:57",
-      "2024-10-10T18:55",
-      "2024-10-11T18:54",
-    ],
-  },
-};
+      '2024-10-07T19:00',
+      '2024-10-08T18:58',
+      '2024-10-09T18:57',
+      '2024-10-10T18:55',
+      '2024-10-11T18:54'
+    ]
+  }
+}
 
 function n(num: number): number {
-  return Math.ceil(num);
+  return Math.ceil(num)
 }
 
 export function Weather({
-  weatherAtLocation = SAMPLE,
+  weatherAtLocation = SAMPLE
 }: {
-  weatherAtLocation?: WeatherAtLocation;
+  weatherAtLocation?: WeatherAtLocation
 }) {
   const currentHigh = Math.max(
     ...weatherAtLocation.hourly.temperature_2m.slice(0, 24)
-  );
+  )
   const currentLow = Math.min(
     ...weatherAtLocation.hourly.temperature_2m.slice(0, 24)
-  );
+  )
 
   const isDay = isWithinInterval(new Date(weatherAtLocation.current.time), {
     start: new Date(weatherAtLocation.daily.sunrise[0]),
-    end: new Date(weatherAtLocation.daily.sunset[0]),
-  });
+    end: new Date(weatherAtLocation.daily.sunset[0])
+  })
 
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+      setIsMobile(window.innerWidth < 768)
+    }
 
-    handleResize();
-    window.addEventListener("resize", handleResize);
+    handleResize()
+    window.addEventListener('resize', handleResize)
 
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
-  const hoursToShow = isMobile ? 5 : 6;
+  const hoursToShow = isMobile ? 5 : 6
 
   const currentTimeIndex = weatherAtLocation.hourly.time.findIndex(
     (time) => new Date(time) >= new Date(weatherAtLocation.current.time)
-  );
+  )
 
   const displayTimes = weatherAtLocation.hourly.time.slice(
     currentTimeIndex,
     currentTimeIndex + hoursToShow
-  );
+  )
   const displayTemperatures = weatherAtLocation.hourly.temperature_2m.slice(
     currentTimeIndex,
     currentTimeIndex + hoursToShow
-  );
+  )
 
   const location =
     weatherAtLocation.cityName ||
-    `${weatherAtLocation.latitude?.toFixed(1)}°, ${weatherAtLocation.longitude?.toFixed(1)}°`;
+    `${weatherAtLocation.latitude?.toFixed(1)}°, ${weatherAtLocation.longitude?.toFixed(1)}°`
 
   return (
     <div
       className={cx(
-        "relative flex w-full flex-col gap-3 overflow-hidden rounded-2xl p-4 shadow-lg backdrop-blur-sm",
+        'relative flex w-full flex-col gap-3 overflow-hidden rounded-2xl p-4 shadow-lg backdrop-blur-sm',
         {
-          "bg-gradient-to-br from-sky-400 via-blue-500 to-blue-600": isDay,
+          'bg-gradient-to-br from-sky-400 via-blue-500 to-blue-600': isDay
         },
         {
-          "bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900":
-            !isDay,
+          'bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900':
+            !isDay
         }
       )}
     >
@@ -344,23 +344,23 @@ export function Weather({
 
       <div className="relative z-10">
         <div className="mb-2 flex items-center justify-between">
-          <div className="font-medium text-white/80 text-xs">{location}</div>
-          <div className="text-white/60 text-xs">
-            {format(new Date(weatherAtLocation.current.time), "MMM d, h:mm a")}
+          <div className="text-xs font-medium text-white/80">{location}</div>
+          <div className="text-xs text-white/60">
+            {format(new Date(weatherAtLocation.current.time), 'MMM d, h:mm a')}
           </div>
         </div>
 
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div
-              className={cx("text-white/90", {
-                "text-yellow-200": isDay,
-                "text-blue-200": !isDay,
+              className={cx('text-white/90', {
+                'text-yellow-200': isDay,
+                'text-blue-200': !isDay
               })}
             >
               {isDay ? <SunIcon size={32} /> : <MoonIcon size={32} />}
             </div>
-            <div className="font-light text-3xl text-white">
+            <div className="text-3xl font-light text-white">
               {n(weatherAtLocation.current.temperature_2m)}
               <span className="text-lg text-white/80">
                 {weatherAtLocation.current_units.temperature_2m}
@@ -369,66 +369,66 @@ export function Weather({
           </div>
 
           <div className="text-right">
-            <div className="font-medium text-white/90 text-xs">
+            <div className="text-xs font-medium text-white/90">
               H: {n(currentHigh)}°
             </div>
-            <div className="text-white/70 text-xs">L: {n(currentLow)}°</div>
+            <div className="text-xs text-white/70">L: {n(currentLow)}°</div>
           </div>
         </div>
 
         <div className="rounded-xl bg-white/10 p-3 backdrop-blur-sm">
-          <div className="mb-2 font-medium text-white/80 text-xs">
+          <div className="mb-2 text-xs font-medium text-white/80">
             Hourly Forecast
           </div>
           <div className="flex justify-between gap-1">
             {displayTimes.map((time, index) => {
-              const hourTime = new Date(time);
+              const hourTime = new Date(time)
               const isCurrentHour =
-                hourTime.getHours() === new Date().getHours();
+                hourTime.getHours() === new Date().getHours()
 
               return (
                 <div
                   className={cx(
-                    "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-md px-1 py-1.5",
+                    'flex min-w-0 flex-1 flex-col items-center gap-1 rounded-md px-1 py-1.5',
                     {
-                      "bg-white/20": isCurrentHour,
+                      'bg-white/20': isCurrentHour
                     }
                   )}
                   key={time}
                 >
-                  <div className="font-medium text-white/70 text-xs">
-                    {index === 0 ? "Now" : format(hourTime, "ha")}
+                  <div className="text-xs font-medium text-white/70">
+                    {index === 0 ? 'Now' : format(hourTime, 'ha')}
                   </div>
 
                   <div
-                    className={cx("text-white/60", {
-                      "text-yellow-200": isDay,
-                      "text-blue-200": !isDay,
+                    className={cx('text-white/60', {
+                      'text-yellow-200': isDay,
+                      'text-blue-200': !isDay
                     })}
                   >
                     <CloudIcon size={16} />
                   </div>
 
-                  <div className="font-medium text-white text-xs">
+                  <div className="text-xs font-medium text-white">
                     {n(displayTemperatures[index])}°
                   </div>
                 </div>
-              );
+              )
             })}
           </div>
         </div>
 
-        <div className="mt-2 flex justify-between text-white/60 text-xs">
+        <div className="mt-2 flex justify-between text-xs text-white/60">
           <div>
-            Sunrise:{" "}
-            {format(new Date(weatherAtLocation.daily.sunrise[0]), "h:mm a")}
+            Sunrise:{' '}
+            {format(new Date(weatherAtLocation.daily.sunrise[0]), 'h:mm a')}
           </div>
           <div>
-            Sunset:{" "}
-            {format(new Date(weatherAtLocation.daily.sunset[0]), "h:mm a")}
+            Sunset:{' '}
+            {format(new Date(weatherAtLocation.daily.sunset[0]), 'h:mm a')}
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }

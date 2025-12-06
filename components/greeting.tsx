@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion'
 
 export const Greeting = () => {
   return (
@@ -8,7 +8,7 @@ export const Greeting = () => {
     >
       <motion.div
         animate={{ opacity: 1, y: 0 }}
-        className="font-semibold text-xl md:text-2xl"
+        className="text-xl font-semibold md:text-2xl"
         exit={{ opacity: 0, y: 10 }}
         initial={{ opacity: 0, y: 10 }}
         transition={{ delay: 0.5 }}
@@ -25,5 +25,5 @@ export const Greeting = () => {
         How can I help you today?
       </motion.div>
     </div>
-  );
-};
+  )
+}

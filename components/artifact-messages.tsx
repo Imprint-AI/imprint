@@ -1,23 +1,23 @@
-import type { UseChatHelpers } from "@ai-sdk/react";
-import equal from "fast-deep-equal";
-import { AnimatePresence, motion } from "framer-motion";
-import { memo } from "react";
-import { useMessages } from "@/hooks/use-messages";
-import type { Vote } from "@/lib/db/schema";
-import type { ChatMessage } from "@/lib/types";
-import type { UIArtifact } from "./artifact";
-import { PreviewMessage, ThinkingMessage } from "./message";
+import type { UseChatHelpers } from '@ai-sdk/react'
+import equal from 'fast-deep-equal'
+import { AnimatePresence, motion } from 'framer-motion'
+import { memo } from 'react'
+import { useMessages } from '@/hooks/use-messages'
+import type { Vote } from '@/lib/db/schema'
+import type { ChatMessage } from '@/lib/types'
+import type { UIArtifact } from './artifact'
+import { PreviewMessage, ThinkingMessage } from './message'
 
 type ArtifactMessagesProps = {
-  chatId: string;
-  status: UseChatHelpers<ChatMessage>["status"];
-  votes: Vote[] | undefined;
-  messages: ChatMessage[];
-  setMessages: UseChatHelpers<ChatMessage>["setMessages"];
-  regenerate: UseChatHelpers<ChatMessage>["regenerate"];
-  isReadonly: boolean;
-  artifactStatus: UIArtifact["status"];
-};
+  chatId: string
+  status: UseChatHelpers<ChatMessage>['status']
+  votes: Vote[] | undefined
+  messages: ChatMessage[]
+  setMessages: UseChatHelpers<ChatMessage>['setMessages']
+  regenerate: UseChatHelpers<ChatMessage>['regenerate']
+  isReadonly: boolean
+  artifactStatus: UIArtifact['status']
+}
 
 function PureArtifactMessages({
   chatId,
@@ -26,17 +26,17 @@ function PureArtifactMessages({
   messages,
   setMessages,
   regenerate,
-  isReadonly,
+  isReadonly
 }: ArtifactMessagesProps) {
   const {
     containerRef: messagesContainerRef,
     endRef: messagesEndRef,
     onViewportEnter,
     onViewportLeave,
-    hasSentMessage,
+    hasSentMessage
   } = useMessages({
-    status,
-  });
+    status
+  })
 
   return (
     <div
@@ -46,7 +46,7 @@ function PureArtifactMessages({
       {messages.map((message, index) => (
         <PreviewMessage
           chatId={chatId}
-          isLoading={status === "streaming" && index === messages.length - 1}
+          isLoading={status === 'streaming' && index === messages.length - 1}
           isReadonly={isReadonly}
           key={message.id}
           message={message}
@@ -64,7 +64,7 @@ function PureArtifactMessages({
       ))}
 
       <AnimatePresence mode="wait">
-        {status === "submitted" && <ThinkingMessage key="thinking" />}
+        {status === 'submitted' && <ThinkingMessage key="thinking" />}
       </AnimatePresence>
 
       <motion.div
@@ -74,7 +74,7 @@ function PureArtifactMessages({
         ref={messagesEndRef}
       />
     </div>
-  );
+  )
 }
 
 function areEqual(
@@ -82,26 +82,26 @@ function areEqual(
   nextProps: ArtifactMessagesProps
 ) {
   if (
-    prevProps.artifactStatus === "streaming" &&
-    nextProps.artifactStatus === "streaming"
+    prevProps.artifactStatus === 'streaming' &&
+    nextProps.artifactStatus === 'streaming'
   ) {
-    return true;
+    return true
   }
 
   if (prevProps.status !== nextProps.status) {
-    return false;
+    return false
   }
   if (prevProps.status && nextProps.status) {
-    return false;
+    return false
   }
   if (prevProps.messages.length !== nextProps.messages.length) {
-    return false;
+    return false
   }
   if (!equal(prevProps.votes, nextProps.votes)) {
-    return false;
+    return false
   }
 
-  return true;
+  return true
 }
 
-export const ArtifactMessages = memo(PureArtifactMessages, areEqual);
+export const ArtifactMessages = memo(PureArtifactMessages, areEqual)

@@ -1,35 +1,35 @@
-import Image from "next/image";
-import type { Attachment } from "@/lib/types";
-import { Loader } from "./elements/loader";
-import { CrossSmallIcon } from "./icons";
-import { Button } from "./ui/button";
+import Image from 'next/image'
+import type { Attachment } from '@/lib/types'
+import { Loader } from './elements/loader'
+import { CrossSmallIcon } from './icons'
+import { Button } from './ui/button'
 
 export const PreviewAttachment = ({
   attachment,
   isUploading = false,
-  onRemove,
+  onRemove
 }: {
-  attachment: Attachment;
-  isUploading?: boolean;
-  onRemove?: () => void;
+  attachment: Attachment
+  isUploading?: boolean
+  onRemove?: () => void
 }) => {
-  const { name, url, contentType } = attachment;
+  const { name, url, contentType } = attachment
 
   return (
     <div
-      className="group relative size-16 overflow-hidden rounded-lg border bg-muted"
+      className="group bg-muted relative size-16 overflow-hidden rounded-lg border"
       data-testid="input-attachment-preview"
     >
-      {contentType?.startsWith("image") ? (
+      {contentType?.startsWith('image') ? (
         <Image
-          alt={name ?? "An image attachment"}
+          alt={name ?? 'An image attachment'}
           className="size-full object-cover"
           height={64}
           src={url}
           width={64}
         />
       ) : (
-        <div className="flex size-full items-center justify-center text-muted-foreground text-xs">
+        <div className="text-muted-foreground flex size-full items-center justify-center text-xs">
           File
         </div>
       )}
@@ -58,5 +58,5 @@ export const PreviewAttachment = ({
         {name}
       </div>
     </div>
-  );
-};
+  )
+}

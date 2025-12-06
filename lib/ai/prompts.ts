@@ -1,5 +1,5 @@
-import type { Geo } from "@vercel/functions";
-import type { ArtifactKind } from "@/components/artifact";
+import type { Geo } from '@vercel/functions'
+import type { ArtifactKind } from '@/components/artifact'
 
 export const artifactsPrompt = `
 Artifacts is a special user interface mode that helps users with writing, editing, and other content creation tasks. When artifact is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the artifacts and visible to the user.
@@ -30,17 +30,17 @@ This is a guide for using artifacts tools: \`createDocument\` and \`updateDocume
 - Immediately after creating a document
 
 Do not update document right after creating it. Wait for user feedback or request to update it.
-`;
+`
 
 export const regularPrompt =
-  "You are a friendly assistant! Keep your responses concise and helpful.";
+  'You are a friendly assistant! Keep your responses concise and helpful.'
 
 export type RequestHints = {
-  latitude: Geo["latitude"];
-  longitude: Geo["longitude"];
-  city: Geo["city"];
-  country: Geo["country"];
-};
+  latitude: Geo['latitude']
+  longitude: Geo['longitude']
+  city: Geo['city']
+  country: Geo['country']
+}
 
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
 About the origin of user's request:
@@ -48,23 +48,23 @@ About the origin of user's request:
 - lon: ${requestHints.longitude}
 - city: ${requestHints.city}
 - country: ${requestHints.country}
-`;
+`
 
 export const systemPrompt = ({
   selectedChatModel,
-  requestHints,
+  requestHints
 }: {
-  selectedChatModel: string;
-  requestHints: RequestHints;
+  selectedChatModel: string
+  requestHints: RequestHints
 }) => {
-  const requestPrompt = getRequestPromptFromHints(requestHints);
+  const requestPrompt = getRequestPromptFromHints(requestHints)
 
-  if (selectedChatModel === "chat-model-reasoning") {
-    return `${regularPrompt}\n\n${requestPrompt}`;
+  if (selectedChatModel === 'chat-model-reasoning') {
+    return `${regularPrompt}\n\n${requestPrompt}`
   }
 
-  return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
-};
+  return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`
+}
 
 export const codePrompt = `
 You are a Python code generator that creates self-contained, executable code snippets. When writing code:
@@ -90,31 +90,31 @@ def factorial(n):
     return result
 
 print(f"Factorial of 5 is: {factorial(5)}")
-`;
+`
 
 export const sheetPrompt = `
 You are a spreadsheet creation assistant. Create a spreadsheet in csv format based on the given prompt. The spreadsheet should contain meaningful column headers and data.
-`;
+`
 
 export const updateDocumentPrompt = (
   currentContent: string | null,
   type: ArtifactKind
 ) => {
-  let mediaType = "document";
+  let mediaType = 'document'
 
-  if (type === "code") {
-    mediaType = "code snippet";
-  } else if (type === "sheet") {
-    mediaType = "spreadsheet";
+  if (type === 'code') {
+    mediaType = 'code snippet'
+  } else if (type === 'sheet') {
+    mediaType = 'spreadsheet'
   }
 
   return `Improve the following contents of the ${mediaType} based on the given prompt.
 
-${currentContent}`;
-};
+${currentContent}`
+}
 
 export const titlePrompt = `\n
     - you will generate a short title based on the first message a user begins a conversation with
     - ensure it is not more than 80 characters long
     - the title should be a summary of the user's message
-    - do not use quotes or colons`;
+    - do not use quotes or colons`

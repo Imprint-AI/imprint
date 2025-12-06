@@ -1,77 +1,76 @@
-"use client";
+'use client'
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { useActionState, useEffect, useState } from "react";
-import { AuthForm } from "@/components/auth-form";
-import { SubmitButton } from "@/components/submit-button";
-import { toast } from "@/components/toast";
-import { type RegisterActionState, register } from "../actions";
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
+import { useActionState, useEffect, useState } from 'react'
+import { AuthForm } from '@/components/auth-form'
+import { SubmitButton } from '@/components/submit-button'
+import { toast } from '@/components/toast'
+import { type RegisterActionState, register } from '../actions'
 
 export default function Page() {
-  const router = useRouter();
+  const router = useRouter()
 
-  const [email, setEmail] = useState("");
-  const [isSuccessful, setIsSuccessful] = useState(false);
+  const [email, setEmail] = useState('')
 
   const [state, formAction] = useActionState<RegisterActionState, FormData>(
     register,
     {
-      status: "idle",
+      status: 'idle'
     }
-  );
+  )
 
-  const { update: updateSession } = useSession();
+  const { update: updateSession } = useSession()
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: router and updateSession are stable refs
+  const isSuccessful = state.status === 'success'
+
   useEffect(() => {
-    if (state.status === "user_exists") {
-      toast({ type: "error", description: "Account already exists!" });
-    } else if (state.status === "failed") {
-      toast({ type: "error", description: "Failed to create account!" });
-    } else if (state.status === "invalid_data") {
+    if (state.status === 'success') {
+      toast({ type: 'success', description: 'Account created successfully!' })
+      updateSession()
+      router.refresh()
+    } else if (state.status === 'user_exists') {
+      toast({ type: 'error', description: 'Account already exists!' })
+    } else if (state.status === 'failed') {
+      toast({ type: 'error', description: 'Failed to create account!' })
+    } else if (state.status === 'invalid_data') {
       toast({
-        type: "error",
-        description: "Failed validating your submission!",
-      });
-    } else if (state.status === "success") {
-      toast({ type: "success", description: "Account created successfully!" });
-
-      setIsSuccessful(true);
-      updateSession();
-      router.refresh();
+        type: 'error',
+        description: 'Failed validating your submission!'
+      })
     }
-  }, [state.status]);
+  }, [state.status])
 
   const handleSubmit = (formData: FormData) => {
-    setEmail(formData.get("email") as string);
-    formAction(formData);
-  };
+    setEmail(formData.get('email') as string)
+    formAction(formData)
+  }
 
   return (
-    <div className="flex h-dvh w-screen items-start justify-center bg-background pt-12 md:items-center md:pt-0">
+    <div className="bg-background flex h-dvh w-screen items-start justify-center pt-12 md:items-center md:pt-0">
       <div className="flex w-full max-w-md flex-col gap-12 overflow-hidden rounded-2xl">
         <div className="flex flex-col items-center justify-center gap-2 px-4 text-center sm:px-16">
-          <h3 className="font-semibold text-xl dark:text-zinc-50">Sign Up</h3>
-          <p className="text-gray-500 text-sm dark:text-zinc-400">
+          <h3 className="text-xl font-semibold dark:text-zinc-50">Sign Up</h3>
+          <p className="text-sm text-gray-500 dark:text-zinc-400">
             Create an account with your email and password
           </p>
         </div>
         <AuthForm action={handleSubmit} defaultEmail={email}>
+          {/* 3. 将派生的 isSuccessful 值传递给 SubmitButton */}
           <SubmitButton isSuccessful={isSuccessful}>Sign Up</SubmitButton>
-          <p className="mt-4 text-center text-gray-600 text-sm dark:text-zinc-400">
-            {"Already have an account? "}
+          <p className="mt-4 text-center text-sm text-gray-600 dark:text-zinc-400">
+            {'Already have an account? '}
             <Link
               className="font-semibold text-gray-800 hover:underline dark:text-zinc-200"
               href="/login"
             >
               Sign in
             </Link>
-            {" instead."}
+            {' instead.'}
           </p>
         </AuthForm>
       </div>
     </div>
-  );
+  )
 }

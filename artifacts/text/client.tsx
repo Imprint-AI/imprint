@@ -1,56 +1,56 @@
-import { toast } from "sonner";
-import { Artifact } from "@/components/create-artifact";
-import { DiffView } from "@/components/diffview";
-import { DocumentSkeleton } from "@/components/document-skeleton";
+import { toast } from 'sonner'
+import { Artifact } from '@/components/create-artifact'
+import { DiffView } from '@/components/diffview'
+import { DocumentSkeleton } from '@/components/document-skeleton'
 import {
   ClockRewind,
   CopyIcon,
   MessageIcon,
   PenIcon,
   RedoIcon,
-  UndoIcon,
-} from "@/components/icons";
-import { Editor } from "@/components/text-editor";
-import type { Suggestion } from "@/lib/db/schema";
-import { getSuggestions } from "../actions";
+  UndoIcon
+} from '@/components/icons'
+import { Editor } from '@/components/text-editor'
+import type { Suggestion } from '@/lib/db/schema'
+import { getSuggestions } from '../actions'
 
 type TextArtifactMetadata = {
-  suggestions: Suggestion[];
-};
+  suggestions: Suggestion[]
+}
 
-export const textArtifact = new Artifact<"text", TextArtifactMetadata>({
-  kind: "text",
-  description: "Useful for text content, like drafting essays and emails.",
+export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
+  kind: 'text',
+  description: 'Useful for text content, like drafting essays and emails.',
   initialize: async ({ documentId, setMetadata }) => {
-    const suggestions = await getSuggestions({ documentId });
+    const suggestions = await getSuggestions({ documentId })
 
     setMetadata({
-      suggestions,
-    });
+      suggestions
+    })
   },
   onStreamPart: ({ streamPart, setMetadata, setArtifact }) => {
-    if (streamPart.type === "data-suggestion") {
+    if (streamPart.type === 'data-suggestion') {
       setMetadata((metadata) => {
         return {
-          suggestions: [...metadata.suggestions, streamPart.data],
-        };
-      });
+          suggestions: [...metadata.suggestions, streamPart.data]
+        }
+      })
     }
 
-    if (streamPart.type === "data-textDelta") {
+    if (streamPart.type === 'data-textDelta') {
       setArtifact((draftArtifact) => {
         return {
           ...draftArtifact,
           content: draftArtifact.content + streamPart.data,
           isVisible:
-            draftArtifact.status === "streaming" &&
+            draftArtifact.status === 'streaming' &&
             draftArtifact.content.length > 400 &&
             draftArtifact.content.length < 450
               ? true
               : draftArtifact.isVisible,
-          status: "streaming",
-        };
-      });
+          status: 'streaming'
+        }
+      })
     }
   },
   content: ({
@@ -62,17 +62,17 @@ export const textArtifact = new Artifact<"text", TextArtifactMetadata>({
     onSaveContent,
     getDocumentContentById,
     isLoading,
-    metadata,
+    metadata
   }) => {
     if (isLoading) {
-      return <DocumentSkeleton artifactKind="text" />;
+      return <DocumentSkeleton artifactKind="text" />
     }
 
-    if (mode === "diff") {
-      const oldContent = getDocumentContentById(currentVersionIndex - 1);
-      const newContent = getDocumentContentById(currentVersionIndex);
+    if (mode === 'diff') {
+      const oldContent = getDocumentContentById(currentVersionIndex - 1)
+      const newContent = getDocumentContentById(currentVersionIndex)
 
-      return <DiffView newContent={newContent} oldContent={oldContent} />;
+      return <DiffView newContent={newContent} oldContent={oldContent} />
     }
 
     return (
@@ -90,90 +90,90 @@ export const textArtifact = new Artifact<"text", TextArtifactMetadata>({
           <div className="h-dvh w-12 shrink-0 md:hidden" />
         ) : null}
       </div>
-    );
+    )
   },
   actions: [
     {
       icon: <ClockRewind size={18} />,
-      description: "View changes",
+      description: 'View changes',
       onClick: ({ handleVersionChange }) => {
-        handleVersionChange("toggle");
+        handleVersionChange('toggle')
       },
       isDisabled: ({ currentVersionIndex }) => {
         if (currentVersionIndex === 0) {
-          return true;
+          return true
         }
 
-        return false;
-      },
+        return false
+      }
     },
     {
       icon: <UndoIcon size={18} />,
-      description: "View Previous version",
+      description: 'View Previous version',
       onClick: ({ handleVersionChange }) => {
-        handleVersionChange("prev");
+        handleVersionChange('prev')
       },
       isDisabled: ({ currentVersionIndex }) => {
         if (currentVersionIndex === 0) {
-          return true;
+          return true
         }
 
-        return false;
-      },
+        return false
+      }
     },
     {
       icon: <RedoIcon size={18} />,
-      description: "View Next version",
+      description: 'View Next version',
       onClick: ({ handleVersionChange }) => {
-        handleVersionChange("next");
+        handleVersionChange('next')
       },
       isDisabled: ({ isCurrentVersion }) => {
         if (isCurrentVersion) {
-          return true;
+          return true
         }
 
-        return false;
-      },
+        return false
+      }
     },
     {
       icon: <CopyIcon size={18} />,
-      description: "Copy to clipboard",
+      description: 'Copy to clipboard',
       onClick: ({ content }) => {
-        navigator.clipboard.writeText(content);
-        toast.success("Copied to clipboard!");
-      },
-    },
+        navigator.clipboard.writeText(content)
+        toast.success('Copied to clipboard!')
+      }
+    }
   ],
   toolbar: [
     {
       icon: <PenIcon />,
-      description: "Add final polish",
+      description: 'Add final polish',
       onClick: ({ sendMessage }) => {
         sendMessage({
-          role: "user",
+          role: 'user',
           parts: [
             {
-              type: "text",
-              text: "Please add final polish and check for grammar, add section titles for better structure, and ensure everything reads smoothly.",
-            },
-          ],
-        });
-      },
+              type: 'text',
+              text: 'Please add final polish and check for grammar, add section titles for better structure, and ensure everything reads smoothly.'
+            }
+          ]
+        })
+      }
     },
     {
       icon: <MessageIcon />,
-      description: "Request suggestions",
+      description: 'Request suggestions',
       onClick: ({ sendMessage }) => {
         sendMessage({
-          role: "user",
+          role: 'user',
           parts: [
             {
-              type: "text",
-              text: "Please add suggestions you have that could improve the writing.",
-            },
-          ],
-        });
-      },
-    },
-  ],
-});
+              type: 'text',
+              text: 'Please add suggestions you have that could improve the writing.'
+            }
+          ]
+        })
+      }
+    }
+  ]
+})

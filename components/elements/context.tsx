@@ -1,47 +1,47 @@
-"use client";
+'use client'
 
-import type { ComponentProps } from "react";
+import type { ComponentProps } from 'react'
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
-import type { AppUsage } from "@/lib/usage";
-import { cn } from "@/lib/utils";
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
+import { Progress } from '@/components/ui/progress'
+import { Separator } from '@/components/ui/separator'
+import type { AppUsage } from '@/lib/usage'
+import { cn } from '@/lib/utils'
 
-export type ContextProps = ComponentProps<"button"> & {
+export type ContextProps = ComponentProps<'button'> & {
   /** Optional full usage payload to enable breakdown view */
-  usage?: AppUsage;
-};
+  usage?: AppUsage
+}
 
-const _THOUSAND = 1000;
-const _MILLION = 1_000_000;
-const _BILLION = 1_000_000_000;
-const PERCENT_MAX = 100;
+const _THOUSAND = 1000
+const _MILLION = 1_000_000
+const _BILLION = 1_000_000_000
+const PERCENT_MAX = 100
 
 // Lucide CircleIcon geometry
-const ICON_VIEWBOX = 24;
-const ICON_CENTER = 12;
-const ICON_RADIUS = 10;
-const ICON_STROKE_WIDTH = 2;
+const ICON_VIEWBOX = 24
+const ICON_CENTER = 12
+const ICON_RADIUS = 10
+const ICON_STROKE_WIDTH = 2
 
 type ContextIconProps = {
-  percent: number; // 0 - 100
-};
+  percent: number // 0 - 100
+}
 
 export const ContextIcon = ({ percent }: ContextIconProps) => {
-  const radius = ICON_RADIUS;
-  const circumference = 2 * Math.PI * radius;
-  const dashOffset = circumference * (1 - percent / PERCENT_MAX);
+  const radius = ICON_RADIUS
+  const circumference = 2 * Math.PI * radius
+  const dashOffset = circumference * (1 - percent / PERCENT_MAX)
 
   return (
     <svg
       aria-label={`${percent.toFixed(2)}% of model context used`}
       height="28"
       role="img"
-      style={{ color: "currentcolor" }}
+      style={{ color: 'currentcolor' }}
       viewBox={`0 0 ${ICON_VIEWBOX} ${ICON_VIEWBOX}`}
       width="28"
     >
@@ -68,24 +68,24 @@ export const ContextIcon = ({ percent }: ContextIconProps) => {
         transform={`rotate(-90 ${ICON_CENTER} ${ICON_CENTER})`}
       />
     </svg>
-  );
-};
+  )
+}
 
 function InfoRow({
   label,
   tokens,
-  costText,
+  costText
 }: {
-  label: string;
-  tokens?: number;
-  costText?: string;
+  label: string
+  tokens?: number
+  costText?: string
 }) {
   return (
     <div className="flex items-center justify-between text-xs">
       <span className="text-muted-foreground">{label}</span>
       <div className="flex items-center gap-2 font-mono">
         <span className="min-w-[4ch] text-right">
-          {tokens === undefined ? "—" : tokens.toLocaleString()}
+          {tokens === undefined ? '—' : tokens.toLocaleString()}
         </span>
         {costText !== undefined &&
           costText !== null &&
@@ -96,31 +96,31 @@ function InfoRow({
           )}
       </div>
     </div>
-  );
+  )
 }
 
 export const Context = ({ className, usage, ...props }: ContextProps) => {
-  const used = usage?.totalTokens ?? 0;
+  const used = usage?.totalTokens ?? 0
   const max =
     usage?.context?.totalMax ??
     usage?.context?.combinedMax ??
-    usage?.context?.inputMax;
-  const hasMax = typeof max === "number" && Number.isFinite(max) && max > 0;
-  const usedPercent = hasMax ? Math.min(100, (used / max) * 100) : 0;
+    usage?.context?.inputMax
+  const hasMax = typeof max === 'number' && Number.isFinite(max) && max > 0
+  const usedPercent = hasMax ? Math.min(100, (used / max) * 100) : 0
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
           className={cn(
-            "inline-flex select-none items-center gap-1 rounded-md text-sm",
-            "cursor-pointer bg-background text-foreground",
-            "outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+            'inline-flex items-center gap-1 rounded-md text-sm select-none',
+            'bg-background text-foreground cursor-pointer',
+            'ring-offset-background focus-visible:ring-ring outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
             className
           )}
           type="button"
           {...props}
         >
-          <span className="hidden font-medium text-muted-foreground">
+          <span className="text-muted-foreground hidden font-medium">
             {usedPercent.toFixed(1)}%
           </span>
           <ContextIcon percent={usedPercent} />
@@ -135,7 +135,7 @@ export const Context = ({ className, usage, ...props }: ContextProps) => {
             </span>
           </div>
           <div className="space-y-2">
-            <Progress className="h-2 bg-muted" value={usedPercent} />
+            <Progress className="bg-muted h-2" value={usedPercent} />
           </div>
           <div className="mt-1 space-y-1">
             {usage?.cachedInputTokens && usage.cachedInputTokens > 0 && (
@@ -175,7 +175,7 @@ export const Context = ({ className, usage, ...props }: ContextProps) => {
                       {Number.isNaN(
                         Number.parseFloat(usage.costUSD.totalUSD.toString())
                       )
-                        ? "—"
+                        ? '—'
                         : `$${Number.parseFloat(usage.costUSD.totalUSD.toString()).toFixed(6)}`}
                     </span>
                   </div>
@@ -186,5 +186,5 @@ export const Context = ({ className, usage, ...props }: ContextProps) => {
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
-};
+  )
+}

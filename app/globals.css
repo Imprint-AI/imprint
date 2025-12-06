@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "katex/dist/katex.min.css";
+@import 'tailwindcss';
+@import 'katex/dist/katex.min.css';
 
 /* include utility classes in streamdown */
 @source '../node_modules/streamdown/dist/index.js';
@@ -8,8 +8,8 @@
 @custom-variant dark (&:is(.dark, .dark *));
 
 /* include plugins */
-@plugin "tailwindcss-animate";
-@plugin "@tailwindcss/typography";
+@plugin 'tailwindcss-animate';
+@plugin '@tailwindcss/typography';
 
 /* define design tokens (light mode) */
 :root {
@@ -213,9 +213,9 @@
     pointer-events: none !important;
   }
 
-  *[class^="text-"] {
+  *[class^='text-'] {
     color: transparent;
-    @apply rounded-md bg-foreground/20 select-none animate-pulse;
+    @apply bg-foreground/20 animate-pulse rounded-md select-none;
   }
 
   .skeleton-bg {
@@ -233,7 +233,7 @@
 
 .cm-editor,
 .cm-gutters {
-  @apply bg-background! dark:bg-zinc-800! outline-hidden! selection:bg-zinc-900!;
+  @apply bg-background! outline-hidden! selection:bg-zinc-900! dark:bg-zinc-800!;
 }
 
 .ͼo.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground,
@@ -264,7 +264,7 @@
 }
 
 .suggestion-highlight {
-  @apply bg-blue-200 hover:bg-blue-300 dark:hover:bg-blue-400/50 dark:text-blue-50 dark:bg-blue-500/40;
+  @apply bg-blue-200 hover:bg-blue-300 dark:bg-blue-500/40 dark:text-blue-50 dark:hover:bg-blue-400/50;
 }
 
 /* minimal scrollbar styling */

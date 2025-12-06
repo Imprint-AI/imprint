@@ -1,57 +1,57 @@
-"use client";
+'use client'
 
-import type { UseChatHelpers } from "@ai-sdk/react";
+import type { UseChatHelpers } from '@ai-sdk/react'
 import {
   type Dispatch,
   type SetStateAction,
   useCallback,
   useEffect,
   useRef,
-  useState,
-} from "react";
-import { deleteTrailingMessages } from "@/app/(chat)/actions";
-import type { ChatMessage } from "@/lib/types";
-import { getTextFromMessage } from "@/lib/utils";
-import { Button } from "./ui/button";
-import { Textarea } from "./ui/textarea";
+  useState
+} from 'react'
+import { deleteTrailingMessages } from '@/app/(chat)/actions'
+import type { ChatMessage } from '@/lib/types'
+import { getTextFromMessage } from '@/lib/utils'
+import { Button } from './ui/button'
+import { Textarea } from './ui/textarea'
 
 export type MessageEditorProps = {
-  message: ChatMessage;
-  setMode: Dispatch<SetStateAction<"view" | "edit">>;
-  setMessages: UseChatHelpers<ChatMessage>["setMessages"];
-  regenerate: UseChatHelpers<ChatMessage>["regenerate"];
-};
+  message: ChatMessage
+  setMode: Dispatch<SetStateAction<'view' | 'edit'>>
+  setMessages: UseChatHelpers<ChatMessage>['setMessages']
+  regenerate: UseChatHelpers<ChatMessage>['regenerate']
+}
 
 export function MessageEditor({
   message,
   setMode,
   setMessages,
-  regenerate,
+  regenerate
 }: MessageEditorProps) {
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
   const [draftContent, setDraftContent] = useState<string>(
     getTextFromMessage(message)
-  );
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  )
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const adjustHeight = useCallback(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight + 2}px`;
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight + 2}px`
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
     if (textareaRef.current) {
-      adjustHeight();
+      adjustHeight()
     }
-  }, [adjustHeight]);
+  }, [adjustHeight])
 
   const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setDraftContent(event.target.value);
-    adjustHeight();
-  };
+    setDraftContent(event.target.value)
+    adjustHeight()
+  }
 
   return (
     <div className="flex w-full flex-col gap-2">
@@ -67,7 +67,7 @@ export function MessageEditor({
         <Button
           className="h-fit px-3 py-2"
           onClick={() => {
-            setMode("view");
+            setMode('view')
           }}
           variant="outline"
         >
@@ -78,35 +78,35 @@ export function MessageEditor({
           data-testid="message-editor-send-button"
           disabled={isSubmitting}
           onClick={async () => {
-            setIsSubmitting(true);
+            setIsSubmitting(true)
 
             await deleteTrailingMessages({
-              id: message.id,
-            });
+              id: message.id
+            })
 
             setMessages((messages) => {
-              const index = messages.findIndex((m) => m.id === message.id);
+              const index = messages.findIndex((m) => m.id === message.id)
 
               if (index !== -1) {
                 const updatedMessage: ChatMessage = {
                   ...message,
-                  parts: [{ type: "text", text: draftContent }],
-                };
+                  parts: [{ type: 'text', text: draftContent }]
+                }
 
-                return [...messages.slice(0, index), updatedMessage];
+                return [...messages.slice(0, index), updatedMessage]
               }
 
-              return messages;
-            });
+              return messages
+            })
 
-            setMode("view");
-            regenerate();
+            setMode('view')
+            regenerate()
           }}
           variant="default"
         >
-          {isSubmitting ? "Sending..." : "Send"}
+          {isSubmitting ? 'Sending...' : 'Send'}
         </Button>
       </div>
     </div>
-  );
+  )
 }

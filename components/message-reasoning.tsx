@@ -1,28 +1,28 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react'
 import {
   Reasoning,
   ReasoningContent,
-  ReasoningTrigger,
-} from "./elements/reasoning";
+  ReasoningTrigger
+} from './elements/reasoning'
 
 type MessageReasoningProps = {
-  isLoading: boolean;
-  reasoning: string;
-};
+  isLoading: boolean
+  reasoning: string
+}
 
 export function MessageReasoning({
   isLoading,
-  reasoning,
+  reasoning
 }: MessageReasoningProps) {
-  const [hasBeenStreaming, setHasBeenStreaming] = useState(isLoading);
+  const [hasBeenStreaming, setHasBeenStreaming] = useState(isLoading)
 
   useEffect(() => {
     if (isLoading) {
-      setHasBeenStreaming(true);
+      setHasBeenStreaming(true)
     }
-  }, [isLoading]);
+  }, [isLoading])
 
   return (
     <Reasoning
@@ -33,5 +33,5 @@ export function MessageReasoning({
       <ReasoningTrigger />
       <ReasoningContent>{reasoning}</ReasoningContent>
     </Reasoning>
-  );
+  )
 }

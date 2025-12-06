@@ -1,19 +1,19 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
   images: {
     remotePatterns: [
       {
-        hostname: "avatar.vercel.sh",
+        hostname: 'avatar.vercel.sh'
       },
       {
-        protocol: "https",
+        protocol: 'https',
         //https://nextjs.org/docs/messages/next-image-unconfigured-host
-        hostname: "*.public.blob.vercel-storage.com",
-      },
-    ],
-  },
-};
+        hostname: '*.public.blob.vercel-storage.com'
+      }
+    ]
+  }
+}
 
-export default nextConfig;
+export default nextConfig
