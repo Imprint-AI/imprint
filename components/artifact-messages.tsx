@@ -32,8 +32,7 @@ function PureArtifactMessages({
     containerRef: messagesContainerRef,
     endRef: messagesEndRef,
     onViewportEnter,
-    onViewportLeave,
-    hasSentMessage
+    onViewportLeave
   } = useMessages({
     status
   })
@@ -51,9 +50,6 @@ function PureArtifactMessages({
           key={message.id}
           message={message}
           regenerate={regenerate}
-          requiresScrollPadding={
-            hasSentMessage && index === messages.length - 1
-          }
           setMessages={setMessages}
           vote={
             votes
