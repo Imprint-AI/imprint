@@ -20,7 +20,10 @@ test.describe.serial('Guest Session', () => {
 
     while (request) {
       chain.unshift(request.url())
-      request = request.redirectedFrom()
+      const r = request.redirectedFrom()
+      if (r) {
+        request = r
+      }
     }
 
     expect(chain).toEqual([
@@ -62,7 +65,10 @@ test.describe.serial('Guest Session', () => {
 
     while (request) {
       chain.unshift(request.url())
-      request = request.redirectedFrom()
+      const r = request.redirectedFrom()
+      if (r) {
+        request = r
+      }
     }
 
     expect(chain).toEqual(['http://localhost:3000/'])

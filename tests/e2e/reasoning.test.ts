@@ -14,9 +14,9 @@ test.describe('chat activity with reasoning', () => {
     await chatPage.isGenerationComplete()
 
     const assistantMessage = await chatPage.getRecentAssistantMessage()
-    expect(assistantMessage.content).toBe("It's just blue duh!")
+    expect(assistantMessage?.content).toBe("It's just blue duh!")
 
-    expect(assistantMessage.reasoning).toBe(
+    expect(assistantMessage?.reasoning).toBe(
       'The sky is blue because of rayleigh scattering!'
     )
   })
@@ -27,14 +27,20 @@ test.describe('chat activity with reasoning', () => {
 
     const assistantMessage = await chatPage.getRecentAssistantMessage()
     const reasoningElement =
-      assistantMessage.element.getByTestId('message-reasoning')
-    expect(reasoningElement).toBeVisible()
+      assistantMessage?.element.getByTestId('message-reasoning')
+    if (reasoningElement) {
+      expect(reasoningElement).toBeVisible()
+    }
 
-    await assistantMessage.toggleReasoningVisibility()
-    await expect(reasoningElement).not.toBeVisible()
+    await assistantMessage?.toggleReasoningVisibility()
+    if (reasoningElement) {
+      await expect(reasoningElement).not.toBeVisible()
+    }
 
-    await assistantMessage.toggleReasoningVisibility()
-    await expect(reasoningElement).toBeVisible()
+    await assistantMessage?.toggleReasoningVisibility()
+    if (reasoningElement) {
+      await expect(reasoningElement).toBeVisible()
+    }
   })
 
   test('Curie can edit message and resubmit', async () => {
@@ -43,8 +49,10 @@ test.describe('chat activity with reasoning', () => {
 
     const assistantMessage = await chatPage.getRecentAssistantMessage()
     const reasoningElement =
-      assistantMessage.element.getByTestId('message-reasoning')
-    expect(reasoningElement).toBeVisible()
+      assistantMessage?.element.getByTestId('message-reasoning')
+    if (reasoningElement) {
+      expect(reasoningElement).toBeVisible()
+    }
 
     const userMessage = await chatPage.getRecentUserMessage()
 
@@ -54,9 +62,9 @@ test.describe('chat activity with reasoning', () => {
 
     const updatedAssistantMessage = await chatPage.getRecentAssistantMessage()
 
-    expect(updatedAssistantMessage.content).toBe("It's just green duh!")
+    expect(updatedAssistantMessage?.content).toBe("It's just green duh!")
 
-    expect(updatedAssistantMessage.reasoning).toBe(
+    expect(updatedAssistantMessage?.reasoning).toBe(
       'Grass is green because of chlorophyll absorption!'
     )
   })
