@@ -60,7 +60,7 @@ const Tool = ({
 
   useEffect(() => {
     if (selectedTool !== description) {
-      setIsHovered(false)
+      queueMicrotask(() => setIsHovered(false))
     }
   }, [selectedTool, description])
 

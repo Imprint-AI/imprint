@@ -68,11 +68,11 @@ export const Reasoning = memo(
     useEffect(() => {
       if (isStreaming) {
         if (startTime === null) {
-          setStartTime(Date.now())
+          queueMicrotask(() => setStartTime(Date.now()))
         }
       } else if (startTime !== null) {
         setDuration(Math.round((Date.now() - startTime) / MS_IN_S))
-        setStartTime(null)
+        queueMicrotask(() => setStartTime(null))
       }
     }, [isStreaming, startTime, setDuration])
 

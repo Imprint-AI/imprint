@@ -186,6 +186,7 @@ function PureMultimodalInput({
       const { error } = await response.json()
       toast.error(error)
     } catch (_error) {
+      console.error('File upload failed!', _error)
       toast.error('Failed to upload file, please try again!')
     }
   }, [])
@@ -353,8 +354,6 @@ function PureMultimodalInput({
             className="placeholder:text-muted-foreground grow resize-none border-0! border-none! bg-transparent p-2 text-sm ring-0 outline-none [-ms-overflow-style:none] [scrollbar-width:none] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none [&::-webkit-scrollbar]:hidden"
             data-testid="multimodal-input"
             disableAutoResize={true}
-            maxHeight={200}
-            minHeight={44}
             onChange={handleInput}
             placeholder="Send a message..."
             ref={textareaRef}

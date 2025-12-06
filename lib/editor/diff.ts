@@ -1,19 +1,42 @@
 // Modified from https://github.com/hamflx/prosemirror-diff/blob/master/src/diff.js
 
 import { diff_match_patch } from 'diff-match-patch'
-import { Fragment, Node } from 'prosemirror-model'
+import {
+  Fragment,
+  Mark,
+  Node as ProsemirrorNode,
+  Schema
+} from 'prosemirror-model'
 
 export const DiffType = {
   Unchanged: 0,
   Deleted: -1,
   Inserted: 1
+} as const
+
+export type DiffTypeValue = (typeof DiffType)[keyof typeof DiffType]
+
+export type ProsemirrorNodeLike = ProsemirrorNode | ProsemirrorNode[]
+
+export type NormalizedNodeContent = (ProsemirrorNode | ProsemirrorNode[])[]
+
+export type MatchResult = {
+  oldStartIndex: number
+  newStartIndex: number
+  oldEndIndex: number
+  newEndIndex: number
+  count: number
 }
 
-export const patchDocumentNode = (schema, oldNode, newNode) => {
+export const patchDocumentNode = (
+  schema: Schema,
+  oldNode: ProsemirrorNode,
+  newNode: ProsemirrorNode
+): ProsemirrorNode => {
   assertNodeTypeEqual(oldNode, newNode)
 
-  const finalLeftChildren = []
-  const finalRightChildren = []
+  const finalLeftChildren: ProsemirrorNode[] = []
+  const finalRightChildren: ProsemirrorNode[] = []
 
   const oldChildren = normalizeNodeContent(oldNode)
   const newChildren = normalizeNodeContent(newNode)
@@ -66,7 +89,7 @@ export const patchDocumentNode = (schema, oldNode, newNode) => {
         )
       )
       finalLeftChildren.push(
-        ...diffOldChildren.slice(oldStartIndex, oldEndIndex)
+        ...diffOldChildren.slice(oldStartIndex, oldEndIndex).flat()
       )
 
       const oldAfterMatchChildren = diffOldChildren.slice(oldEndIndex)
@@ -93,8 +116,12 @@ export const patchDocumentNode = (schema, oldNode, newNode) => {
   return createNewNode(oldNode, [...finalLeftChildren, ...finalRightChildren])
 }
 
-const matchNodes = (_schema, oldChildren, newChildren) => {
-  const matches = []
+const matchNodes = (
+  _schema: Schema,
+  oldChildren: NormalizedNodeContent,
+  newChildren: NormalizedNodeContent
+): MatchResult[] => {
+  const matches: MatchResult[] = []
   for (
     let oldStartIndex = 0;
     oldStartIndex < oldChildren.length;
@@ -128,7 +155,11 @@ const matchNodes = (_schema, oldChildren, newChildren) => {
   return matches
 }
 
-const findMatchNode = (children, node, startIndex = 0) => {
+const findMatchNode = (
+  children: NormalizedNodeContent,
+  node: ProsemirrorNodeLike,
+  startIndex = 0
+): number => {
   for (let i = startIndex; i < children.length; i++) {
     if (isNodeEqual(children[i], node)) {
       return i
@@ -137,22 +168,29 @@ const findMatchNode = (children, node, startIndex = 0) => {
   return -1
 }
 
-const patchRemainNodes = (schema, oldChildren, newChildren) => {
-  const finalLeftChildren = []
-  const finalRightChildren = []
+const patchRemainNodes = (
+  schema: Schema,
+  oldChildren: NormalizedNodeContent,
+  newChildren: NormalizedNodeContent
+): ProsemirrorNode[] => {
+  const finalLeftChildren: ProsemirrorNode[] = []
+  const finalRightChildren: ProsemirrorNode[] = []
   const oldChildLen = oldChildren.length
   const newChildLen = newChildren.length
   let left = 0
   let right = 0
+
   while (oldChildLen - left - right > 0 && newChildLen - left - right > 0) {
     const leftOldNode = oldChildren[left]
     const leftNewNode = newChildren[left]
     const rightOldNode = oldChildren[oldChildLen - right - 1]
     const rightNewNode = newChildren[newChildLen - right - 1]
+
     let updateLeft =
       !isTextNode(leftOldNode) && matchNodeType(leftOldNode, leftNewNode)
     let updateRight =
       !isTextNode(rightOldNode) && matchNodeType(rightOldNode, rightNewNode)
+
     if (Array.isArray(leftOldNode) && Array.isArray(leftNewNode)) {
       finalLeftChildren.push(
         ...patchTextNodes(schema, leftOldNode, leftNewNode)
@@ -173,36 +211,58 @@ const patchRemainNodes = (schema, oldChildren, newChildren) => {
         updateRight = false
       }
     }
+
     if (updateLeft) {
-      finalLeftChildren.push(
-        patchDocumentNode(schema, leftOldNode, leftNewNode)
-      )
+      if (
+        leftOldNode instanceof ProsemirrorNode &&
+        leftNewNode instanceof ProsemirrorNode
+      ) {
+        finalLeftChildren.push(
+          patchDocumentNode(schema, leftOldNode, leftNewNode)
+        )
+      }
       left += 1
     } else if (updateRight) {
-      finalRightChildren.unshift(
-        patchDocumentNode(schema, rightOldNode, rightNewNode)
-      )
+      if (
+        rightOldNode instanceof ProsemirrorNode &&
+        rightNewNode instanceof ProsemirrorNode
+      ) {
+        finalRightChildren.unshift(
+          patchDocumentNode(schema, rightOldNode, rightNewNode)
+        )
+      }
       right += 1
     } else {
       // Delete and insert
-      finalLeftChildren.push(
-        createDiffNode(schema, leftOldNode, DiffType.Deleted)
-      )
-      finalLeftChildren.push(
-        createDiffNode(schema, leftNewNode, DiffType.Inserted)
-      )
+      if (leftOldNode instanceof ProsemirrorNode) {
+        finalLeftChildren.push(
+          createDiffNode(schema, leftOldNode, DiffType.Deleted)
+        )
+      }
+      if (leftNewNode instanceof ProsemirrorNode) {
+        finalLeftChildren.push(
+          createDiffNode(schema, leftNewNode, DiffType.Inserted)
+        )
+      }
       left += 1
     }
   }
 
   const deleteNodeLen = oldChildLen - left - right
   const insertNodeLen = newChildLen - left - right
+
   if (deleteNodeLen) {
     finalLeftChildren.push(
       ...oldChildren
         .slice(left, left + deleteNodeLen)
         .flat()
-        .map((node) => createDiffNode(schema, node, DiffType.Deleted))
+        .map((node) => {
+          if (node instanceof ProsemirrorNode) {
+            return createDiffNode(schema, node, DiffType.Deleted)
+          }
+          return null
+        })
+        .filter((node): node is ProsemirrorNode => node !== null)
     )
   }
 
@@ -211,7 +271,13 @@ const patchRemainNodes = (schema, oldChildren, newChildren) => {
       ...newChildren
         .slice(left, left + insertNodeLen)
         .flat()
-        .map((node) => createDiffNode(schema, node, DiffType.Inserted))
+        .map((node) => {
+          if (node instanceof ProsemirrorNode) {
+            return createDiffNode(schema, node, DiffType.Inserted)
+          }
+          return null
+        })
+        .filter((node): node is ProsemirrorNode => node !== null)
     )
   }
 
@@ -219,7 +285,11 @@ const patchRemainNodes = (schema, oldChildren, newChildren) => {
 }
 
 // Updated function to perform sentence-level diffs
-export const patchTextNodes = (schema, oldNode, newNode) => {
+export const patchTextNodes = (
+  schema: Schema,
+  oldNode: ProsemirrorNode[],
+  newNode: ProsemirrorNode[]
+): ProsemirrorNode[] => {
   const dmp = new diff_match_patch()
 
   // Concatenate the text from the text nodes
@@ -237,13 +307,14 @@ export const patchTextNodes = (schema, oldNode, newNode) => {
   )
 
   // Perform the diff
-  let diffs = dmp.diff_main(chars1, chars2, false)
+  const rawDiffs = dmp.diff_main(chars1, chars2, false)
 
   // Convert back to sentences
-  diffs = diffs.map(([type, text]) => {
+  const diffs: [number, string[]][] = rawDiffs.map(([type, text]) => {
     const sentences = text
       .split('')
-      .map((char) => lineArray[char.charCodeAt(0)])
+      .map((char) => lineArray[char.charCodeAt(0)] || '')
+      .filter(Boolean)
     return [type, sentences]
   })
 
@@ -253,7 +324,9 @@ export const patchTextNodes = (schema, oldNode, newNode) => {
       const node = createTextNode(
         schema,
         sentence,
-        type !== DiffType.Unchanged ? [createDiffMark(schema, type)] : []
+        type !== DiffType.Unchanged
+          ? [createDiffMark(schema, type as DiffTypeValue)]
+          : []
       )
       return node
     })
@@ -263,14 +336,15 @@ export const patchTextNodes = (schema, oldNode, newNode) => {
 }
 
 // Function to tokenize text into sentences
-const tokenizeSentences = (text) => {
-  return text.match(/[^.!?]+[.!?]*\s*/g) || []
+const tokenizeSentences = (text: string): string[] => {
+  const matches = text.match(/[^.!?]+[.!?]*\s*/g)
+  return matches ? matches.filter(Boolean) : []
 }
 
 // Function to map sentences to unique characters
-const sentencesToChars = (oldSentences, newSentences) => {
-  const lineArray = []
-  const lineHash = {}
+const sentencesToChars = (oldSentences: string[], newSentences: string[]) => {
+  const lineArray: string[] = []
+  const lineHash: Record<string, number> = {}
   let lineStart = 0
 
   const chars1 = oldSentences
@@ -302,83 +376,125 @@ const sentencesToChars = (oldSentences, newSentences) => {
   return { chars1, chars2, lineArray }
 }
 
-export const computeChildEqualityFactor = (_node1, _node2) => {
+export const computeChildEqualityFactor = (
+  _node1: ProsemirrorNodeLike,
+  _node2: ProsemirrorNodeLike
+): number => {
+  console.warn(
+    'computeChildEqualityFactor is not implemented yet',
+    _node1,
+    _node2
+  )
   return 0
 }
 
-export const assertNodeTypeEqual = (node1, node2) => {
+export const assertNodeTypeEqual = (
+  node1: ProsemirrorNode,
+  node2: ProsemirrorNode
+): void => {
   if (getNodeProperty(node1, 'type') !== getNodeProperty(node2, 'type')) {
-    throw new Error(`node type not equal: ${node1.type} !== ${node2.type}`)
+    throw new Error(
+      `node type not equal: ${node1.type.name} !== ${node2.type.name}`
+    )
   }
 }
 
-export const ensureArray = (value) => {
+export const ensureArray = (value: ProsemirrorNodeLike): ProsemirrorNode[] => {
   return Array.isArray(value) ? value : [value]
 }
 
-export const isNodeEqual = (node1, node2) => {
+export const isNodeEqual = (
+  node1: ProsemirrorNodeLike | Mark,
+  node2: ProsemirrorNodeLike | Mark
+): boolean => {
+  if (node1 instanceof Mark && node2 instanceof Mark) {
+    return (
+      node1.type.name === node2.type.name &&
+      JSON.stringify(node1.attrs || {}) === JSON.stringify(node2.attrs || {})
+    )
+  }
+
   const isNode1Array = Array.isArray(node1)
   const isNode2Array = Array.isArray(node2)
+
   if (isNode1Array !== isNode2Array) {
     return false
   }
-  if (isNode1Array) {
+
+  if (isNode1Array && isNode2Array) {
     return (
       node1.length === node2.length &&
       node1.every((node, index) => isNodeEqual(node, node2[index]))
     )
   }
 
-  const type1 = getNodeProperty(node1, 'type')
-  const type2 = getNodeProperty(node2, 'type')
+  const pnode1 = node1 as ProsemirrorNode
+  const pnode2 = node2 as ProsemirrorNode
+
+  const type1 = pnode1.type.name
+  const type2 = pnode2.type.name
+
   if (type1 !== type2) {
     return false
   }
-  if (isTextNode(node1)) {
-    const text1 = getNodeProperty(node1, 'text')
-    const text2 = getNodeProperty(node2, 'text')
+
+  if (isTextNode(pnode1)) {
+    const text1 = getNodeText(pnode1)
+    const text2 = getNodeText(pnode2)
     if (text1 !== text2) {
       return false
     }
   }
-  const attrs1 = getNodeAttributes(node1)
-  const attrs2 = getNodeAttributes(node2)
+
+  const attrs1 = getNodeAttributes(pnode1)
+  const attrs2 = getNodeAttributes(pnode2)
   const attrs = [...new Set([...Object.keys(attrs1), ...Object.keys(attrs2)])]
+
   for (const attr of attrs) {
     if (attrs1[attr] !== attrs2[attr]) {
       return false
     }
   }
-  const marks1 = getNodeMarks(node1)
-  const marks2 = getNodeMarks(node2)
+
+  const marks1 = [...getNodeMarks(pnode1)]
+  const marks2 = [...getNodeMarks(pnode2)]
+
   if (marks1.length !== marks2.length) {
     return false
   }
+
   for (let i = 0; i < marks1.length; i++) {
     if (!isNodeEqual(marks1[i], marks2[i])) {
       return false
     }
   }
-  const children1 = getNodeChildren(node1)
-  const children2 = getNodeChildren(node2)
+
+  const children1 = [...getNodeChildren(pnode1)]
+  const children2 = [...getNodeChildren(pnode2)]
+
   if (children1.length !== children2.length) {
     return false
   }
+
   for (let i = 0; i < children1.length; i++) {
     if (!isNodeEqual(children1[i], children2[i])) {
       return false
     }
   }
+
   return true
 }
 
-export const normalizeNodeContent = (node) => {
+export const normalizeNodeContent = (
+  node: ProsemirrorNode
+): NormalizedNodeContent => {
   const content = getNodeChildren(node) ?? []
-  const res = []
+  const res: NormalizedNodeContent = []
+
   for (let i = 0; i < content.length; i++) {
     const child = content[i]
     if (isTextNode(child)) {
-      const textNodes = []
+      const textNodes: ProsemirrorNode[] = []
       for (
         let textNode = content[i];
         i < content.length && isTextNode(textNode);
@@ -392,46 +508,80 @@ export const normalizeNodeContent = (node) => {
       res.push(child)
     }
   }
+
   return res
 }
 
-export const getNodeProperty = (node, property) => {
+export const getNodeProperty = (
+  node: ProsemirrorNode,
+  property: string
+): any => {
   if (property === 'type') {
-    return node.type?.name
+    return node.type.name
   }
-  return node[property]
+  return node[property as keyof ProsemirrorNode]
 }
 
-export const getNodeAttribute = (node, attribute) =>
-  node.attrs ? node.attrs[attribute] : undefined
+export const getNodeAttribute = (
+  node: ProsemirrorNode,
+  attribute: string
+): any => (node.attrs ? node.attrs[attribute] : undefined)
 
-export const getNodeAttributes = (node) => (node.attrs ? node.attrs : {})
+export const getNodeAttributes = (
+  node: ProsemirrorNode
+): Record<string, any> => (node.attrs ? node.attrs : {})
 
-export const getNodeMarks = (node) => node.marks ?? []
+export const getNodeMarks = (node: ProsemirrorNode): readonly Mark[] =>
+  node.marks ?? []
 
-export const getNodeChildren = (node) => node.content?.content ?? []
+export const getNodeChildren = (
+  node: ProsemirrorNode
+): readonly ProsemirrorNode[] => node.content?.content ?? []
 
-export const getNodeText = (node) => node.text
+export const getNodeText = (node: ProsemirrorNode): string => node.text ?? ''
 
-export const isTextNode = (node) => node.type?.name === 'text'
+export const isTextNode = (node: ProsemirrorNodeLike): boolean => {
+  if (Array.isArray(node)) {
+    return false
+  }
+  return node.type?.name === 'text'
+}
 
-export const matchNodeType = (node1, node2) =>
-  node1.type?.name === node2.type?.name ||
-  (Array.isArray(node1) && Array.isArray(node2))
+export const matchNodeType = (
+  node1: ProsemirrorNodeLike,
+  node2: ProsemirrorNodeLike
+): boolean => {
+  if (Array.isArray(node1) && Array.isArray(node2)) {
+    return true
+  }
+  if (Array.isArray(node1) || Array.isArray(node2)) {
+    return false
+  }
+  return (
+    (node1 as ProsemirrorNode).type?.name ===
+    (node2 as ProsemirrorNode).type?.name
+  )
+}
 
-export const createNewNode = (oldNode, children) => {
+export const createNewNode = (
+  oldNode: ProsemirrorNode,
+  children: ProsemirrorNode[]
+): ProsemirrorNode => {
   if (!oldNode.type) {
     throw new Error('oldNode.type is undefined')
   }
-  return new Node(
-    oldNode.type,
+  return oldNode.type.create(
     oldNode.attrs,
     Fragment.fromArray(children),
     oldNode.marks
   )
 }
 
-export const createDiffNode = (schema, node, type) => {
+export const createDiffNode = (
+  schema: Schema,
+  node: ProsemirrorNode,
+  type: DiffTypeValue
+): ProsemirrorNode => {
   return mapDocumentNode(node, (currentNode) => {
     if (isTextNode(currentNode)) {
       return createTextNode(schema, getNodeText(currentNode), [
@@ -443,18 +593,26 @@ export const createDiffNode = (schema, node, type) => {
   })
 }
 
-function mapDocumentNode(node, mapper) {
+function mapDocumentNode(
+  node: ProsemirrorNode,
+  mapper: (node: ProsemirrorNode) => ProsemirrorNode | null | undefined
+): ProsemirrorNode {
   const copy = node.copy(
     Fragment.from(
       node.content.content
-        .map((currentNode) => mapDocumentNode(currentNode, mapper))
-        .filter((n) => n)
+        .map((currentNode) => {
+          if (currentNode instanceof ProsemirrorNode) {
+            return mapDocumentNode(currentNode, mapper)
+          }
+          return null
+        })
+        .filter((n): n is ProsemirrorNode => n !== null && n !== undefined)
     )
   )
   return mapper(copy) || copy
 }
 
-export const createDiffMark = (schema, type) => {
+export const createDiffMark = (schema: Schema, type: DiffTypeValue): Mark => {
   if (type === DiffType.Inserted) {
     return schema.mark('diffMark', { type })
   }
@@ -464,12 +622,20 @@ export const createDiffMark = (schema, type) => {
   throw new Error('type is not valid')
 }
 
-export const createTextNode = (schema, content, marks = []) => {
+export const createTextNode = (
+  schema: Schema,
+  content: string,
+  marks: Mark[] = []
+): ProsemirrorNode => {
   return schema.text(content, marks)
 }
 
-export const diffEditor = (schema, oldDoc, newDoc) => {
-  const oldNode = Node.fromJSON(schema, oldDoc)
-  const newNode = Node.fromJSON(schema, newDoc)
+export const diffEditor = (
+  schema: Schema,
+  oldDoc: Record<string, any>,
+  newDoc: Record<string, any>
+): ProsemirrorNode => {
+  const oldNode = ProsemirrorNode.fromJSON(schema, oldDoc)
+  const newNode = ProsemirrorNode.fromJSON(schema, newDoc)
   return patchDocumentNode(schema, oldNode, newNode)
 }

@@ -3,7 +3,7 @@
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 import { unstable_serialize } from 'swr/infinite'
 import { ChatHeader } from '@/components/chat-header'
@@ -59,10 +59,8 @@ export function Chat({
 
   const { mutate } = useSWRConfig()
 
-  // Handle browser back/forward navigation
   useEffect(() => {
     const handlePopState = () => {
-      // When user navigates back/forward, refresh to sync with URL
       router.refresh()
     }
 
@@ -75,11 +73,24 @@ export function Chat({
   const [usage, setUsage] = useState<AppUsage | undefined>(initialLastContext)
   const [showCreditCardAlert, setShowCreditCardAlert] = useState(false)
   const [currentModelId, setCurrentModelId] = useState(initialChatModel)
-  const currentModelIdRef = useRef(currentModelId)
 
-  useEffect(() => {
-    currentModelIdRef.current = currentModelId
-  }, [currentModelId])
+  const transport = useMemo(() => {
+    return new DefaultChatTransport({
+      api: '/api/chat',
+      fetch: fetchWithErrorHandlers,
+      prepareSendMessagesRequest(request) {
+        return {
+          body: {
+            id: request.id,
+            message: request.messages.at(-1),
+            selectedChatModel: currentModelId,
+            selectedVisibilityType: visibilityType,
+            ...request.body
+          }
+        }
+      }
+    })
+  }, [currentModelId, visibilityType])
 
   const {
     messages,
@@ -94,21 +105,7 @@ export function Chat({
     messages: initialMessages,
     experimental_throttle: 100,
     generateId: generateUUID,
-    transport: new DefaultChatTransport({
-      api: '/api/chat',
-      fetch: fetchWithErrorHandlers,
-      prepareSendMessagesRequest(request) {
-        return {
-          body: {
-            id: request.id,
-            message: request.messages.at(-1),
-            selectedChatModel: currentModelIdRef.current,
-            selectedVisibilityType: visibilityType,
-            ...request.body
-          }
-        }
-      }
-    }),
+    transport,
     onData: (dataPart) => {
       setDataStream((ds) => (ds ? [...ds, dataPart] : []))
       if (dataPart.type === 'data-usage') {
@@ -147,7 +144,7 @@ export function Chat({
         parts: [{ type: 'text', text: query }]
       })
 
-      setHasAppendedQuery(true)
+      queueMicrotask(() => setHasAppendedQuery(true))
       window.history.replaceState({}, '', `/chat/${id}`)
     }
   }, [query, sendMessage, hasAppendedQuery, id])

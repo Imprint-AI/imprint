@@ -28,15 +28,13 @@ function PureMessages({
   messages,
   setMessages,
   regenerate,
-  isReadonly,
-  selectedModelId: _selectedModelId
+  isReadonly
 }: MessagesProps) {
   const {
     containerRef: messagesContainerRef,
     endRef: messagesEndRef,
     isAtBottom,
-    scrollToBottom,
-    hasSentMessage
+    scrollToBottom
   } = useMessages({
     status
   })
@@ -62,9 +60,6 @@ function PureMessages({
               key={message.id}
               message={message}
               regenerate={regenerate}
-              requiresScrollPadding={
-                hasSentMessage && index === messages.length - 1
-              }
               setMessages={setMessages}
               vote={
                 votes

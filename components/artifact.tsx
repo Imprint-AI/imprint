@@ -105,18 +105,21 @@ function PureArtifact({
   const { open: isSidebarOpen } = useSidebar()
 
   useEffect(() => {
-    if (documents && documents.length > 0) {
-      const mostRecentDocument = documents.at(-1)
+    if (!documents || documents.length === 0) return
 
-      if (mostRecentDocument) {
-        setDocument(mostRecentDocument)
-        setCurrentVersionIndex(documents.length - 1)
-        setArtifact((currentArtifact) => ({
-          ...currentArtifact,
-          content: mostRecentDocument.content ?? ''
-        }))
-      }
+    const mostRecentDocument = documents.at(-1)
+    if (!mostRecentDocument) return
+
+    const updateState = () => {
+      setDocument(mostRecentDocument)
+      setCurrentVersionIndex(documents.length - 1)
+      setArtifact((currentArtifact) => ({
+        ...currentArtifact,
+        content: mostRecentDocument.content ?? ''
+      }))
     }
+
+    queueMicrotask(updateState)
   }, [documents, setArtifact])
 
   useEffect(() => {

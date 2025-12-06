@@ -8,20 +8,22 @@ import { isTestEnvironment } from '../constants'
 
 export const myProvider = isTestEnvironment
   ? (() => {
-      const {
-        artifactModel,
-        chatModel,
-        reasoningModel,
-        titleModel
-      } = require('./models.mock')
-      return customProvider({
-        languageModels: {
-          'chat-model': chatModel,
-          'chat-model-reasoning': reasoningModel,
-          'title-model': titleModel,
-          'artifact-model': artifactModel
-        }
-      })
+      const loadMockModels = async () => {
+        const { chatModel, reasoningModel, titleModel, artifactModel } =
+          await import('./models.mock')
+
+        return customProvider({
+          languageModels: {
+            'chat-model': chatModel as unknown as any,
+            'chat-model-reasoning': reasoningModel as unknown as any,
+            'title-model': titleModel as unknown as any,
+            'artifact-model': artifactModel as unknown as any
+          }
+        })
+      }
+
+      // 注意：这里返回一个 Promise
+      return loadMockModels()
     })()
   : customProvider({
       languageModels: {

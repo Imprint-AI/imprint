@@ -31,8 +31,7 @@ const PurePreviewMessage = ({
   isLoading,
   setMessages,
   regenerate,
-  isReadonly,
-  requiresScrollPadding: _requiresScrollPadding
+  isReadonly
 }: {
   chatId: string
   message: ChatMessage
@@ -41,7 +40,6 @@ const PurePreviewMessage = ({
   setMessages: UseChatHelpers<ChatMessage>['setMessages']
   regenerate: UseChatHelpers<ChatMessage>['regenerate']
   isReadonly: boolean
-  requiresScrollPadding: boolean
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view')
 
@@ -289,9 +287,6 @@ export const PreviewMessage = memo(
       return false
     }
     if (prevProps.message.id !== nextProps.message.id) {
-      return false
-    }
-    if (prevProps.requiresScrollPadding !== nextProps.requiresScrollPadding) {
       return false
     }
     if (!equal(prevProps.message.parts, nextProps.message.parts)) {

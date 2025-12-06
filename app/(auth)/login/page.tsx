@@ -37,7 +37,7 @@ export default function Page() {
         description: 'Failed validating your submission!'
       })
     }
-  }, [state.status])
+  }, [state.status, router, updateSession])
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get('email') as string)
