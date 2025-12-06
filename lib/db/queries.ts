@@ -173,7 +173,7 @@ export async function getChatsByUserId({
   try {
     const extendedLimit = limit + 1
 
-    const query = (whereCondition?: SQL<any>) =>
+    const query = (whereCondition?: SQL<unknown>) =>
       db
         .select()
         .from(chat)

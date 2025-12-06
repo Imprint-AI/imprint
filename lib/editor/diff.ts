@@ -1,11 +1,10 @@
-// Modified from https://github.com/hamflx/prosemirror-diff/blob/master/src/diff.js
-
 import { diff_match_patch } from 'diff-match-patch'
 import {
   Fragment,
   Mark,
   Node as ProsemirrorNode,
-  Schema
+  Schema,
+  NodeType
 } from 'prosemirror-model'
 
 export const DiffType = {
@@ -26,6 +25,14 @@ export type MatchResult = {
   oldEndIndex: number
   newEndIndex: number
   count: number
+}
+
+export type ProsemirrorJSON = {
+  type: string
+  attrs?: Record<string, unknown>
+  content?: ProsemirrorJSON[]
+  marks?: Array<{ type: string; attrs?: Record<string, unknown> }>
+  text?: string
 }
 
 export const patchDocumentNode = (
@@ -514,22 +521,22 @@ export const normalizeNodeContent = (
 
 export const getNodeProperty = (
   node: ProsemirrorNode,
-  property: string
-): any => {
+  property: 'type' | keyof ProsemirrorNode
+): NodeType | unknown => {
   if (property === 'type') {
-    return node.type.name
+    return node.type
   }
-  return node[property as keyof ProsemirrorNode]
+  return node[property]
 }
 
 export const getNodeAttribute = (
   node: ProsemirrorNode,
   attribute: string
-): any => (node.attrs ? node.attrs[attribute] : undefined)
+): unknown => (node.attrs ? node.attrs[attribute] : undefined)
 
 export const getNodeAttributes = (
   node: ProsemirrorNode
-): Record<string, any> => (node.attrs ? node.attrs : {})
+): Record<string, unknown> => (node.attrs ? { ...node.attrs } : {})
 
 export const getNodeMarks = (node: ProsemirrorNode): readonly Mark[] =>
   node.marks ?? []
@@ -632,8 +639,8 @@ export const createTextNode = (
 
 export const diffEditor = (
   schema: Schema,
-  oldDoc: Record<string, any>,
-  newDoc: Record<string, any>
+  oldDoc: ProsemirrorJSON,
+  newDoc: ProsemirrorJSON
 ): ProsemirrorNode => {
   const oldNode = ProsemirrorNode.fromJSON(schema, oldDoc)
   const newNode = ProsemirrorNode.fromJSON(schema, newDoc)

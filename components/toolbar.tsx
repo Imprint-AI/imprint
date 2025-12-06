@@ -131,7 +131,7 @@ const Tool = ({
   )
 }
 
-const randomArr = [...new Array(6)].map((_x) => nanoid(5))
+const randomArr = [...new Array(6)].map(() => nanoid(5))
 
 const ReadingLevelSelector = ({
   setSelectedTool,

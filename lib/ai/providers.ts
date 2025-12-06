@@ -4,11 +4,12 @@ import {
   extractReasoningMiddleware,
   wrapLanguageModel
 } from 'ai'
+import type { ProviderV2 } from '@ai-sdk/provider'
 import { isTestEnvironment } from '../constants'
 
-let providerInstance: any = null
+let providerInstance: ProviderV2 | null = null
 
-export const getMyProvider = async () => {
+export const getMyProvider = async (): Promise<ProviderV2> => {
   if (providerInstance) {
     return providerInstance
   }
@@ -19,10 +20,10 @@ export const getMyProvider = async () => {
 
     providerInstance = customProvider({
       languageModels: {
-        'chat-model': chatModel as unknown as any,
-        'chat-model-reasoning': reasoningModel as unknown as any,
-        'title-model': titleModel as unknown as any,
-        'artifact-model': artifactModel as unknown as any
+        'chat-model': chatModel,
+        'chat-model-reasoning': reasoningModel,
+        'title-model': titleModel,
+        'artifact-model': artifactModel
       }
     })
   } else {

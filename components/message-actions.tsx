@@ -22,7 +22,7 @@ export function PureMessageActions({
   setMode?: (mode: 'view' | 'edit') => void
 }) {
   const { mutate } = useSWRConfig()
-  const [_, copyToClipboard] = useCopyToClipboard()
+  const [, copyToClipboard] = useCopyToClipboard()
 
   if (isLoading) {
     return null

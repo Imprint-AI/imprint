@@ -54,7 +54,7 @@ test.describe.serial('/api/chat', () => {
     const text = await response.text()
     const lines = text.split('\n')
 
-    const [_, ...rest] = lines
+    const [, ...rest] = lines
     const actualNormalized = normalizeStreamData(rest.filter(Boolean))
     const expectedNormalized = normalizeStreamData(
       TEST_PROMPTS.SKY.OUTPUT_STREAM

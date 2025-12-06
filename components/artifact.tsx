@@ -28,6 +28,7 @@ import { Toolbar } from './toolbar'
 import { useSidebar } from './ui/sidebar'
 import { VersionFooter } from './version-footer'
 import type { VisibilityType } from './visibility-selector'
+import { Artifact as ArtifactType } from './create-artifact'
 
 export const artifactDefinitions = [
   textArtifact,
@@ -248,7 +249,7 @@ function PureArtifact({
 
   const artifactDefinition = artifactDefinitions.find(
     (definition) => definition.kind === artifact.kind
-  )
+  ) as ArtifactType<string, unknown> | undefined
 
   if (!artifactDefinition) {
     throw new Error('Artifact definition not found!')

@@ -30,6 +30,17 @@ declare module 'next-auth/jwt' {
   }
 }
 
+interface CredentialsInput {
+  email?: string
+  password?: string
+}
+
+interface AuthUser {
+  id: string
+  email?: string | null
+  type: UserType
+}
+
 export const {
   handlers: { GET, POST },
   auth,
@@ -40,7 +51,12 @@ export const {
   providers: [
     Credentials({
       credentials: {},
-      async authorize({ email, password }: any) {
+      async authorize({
+        email,
+        password
+      }: CredentialsInput): Promise<AuthUser | null> {
+        if (!email || !password) return null
+
         const users = await getUser(email)
 
         if (users.length === 0) {
@@ -67,7 +83,7 @@ export const {
     Credentials({
       id: 'guest',
       credentials: {},
-      async authorize() {
+      async authorize(): Promise<AuthUser | null> {
         const [guestUser] = await createGuestUser()
         return { ...guestUser, type: 'guest' }
       }

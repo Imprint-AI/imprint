@@ -2,21 +2,21 @@ import { type Dispatch, memo, type SetStateAction, useState } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { artifactDefinitions, type UIArtifact } from './artifact'
-import type { ArtifactActionContext } from './create-artifact'
+import type { ArtifactActionContext, Artifact } from './create-artifact'
 import { Button } from './ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 
-type ArtifactActionsProps = {
+type ArtifactActionsProps<M> = {
   artifact: UIArtifact
   handleVersionChange: (type: 'next' | 'prev' | 'toggle' | 'latest') => void
   currentVersionIndex: number
   isCurrentVersion: boolean
   mode: 'edit' | 'diff'
-  metadata: any
-  setMetadata: Dispatch<SetStateAction<any>>
+  metadata: M
+  setMetadata: Dispatch<SetStateAction<M>>
 }
 
-function PureArtifactActions({
+function PureArtifactActions<M>({
   artifact,
   handleVersionChange,
   currentVersionIndex,
@@ -24,18 +24,18 @@ function PureArtifactActions({
   mode,
   metadata,
   setMetadata
-}: ArtifactActionsProps) {
+}: ArtifactActionsProps<M>) {
   const [isLoading, setIsLoading] = useState(false)
 
   const artifactDefinition = artifactDefinitions.find(
     (definition) => definition.kind === artifact.kind
-  )
+  ) as Artifact<string, M> | undefined
 
   if (!artifactDefinition) {
     throw new Error('Artifact definition not found!')
   }
 
-  const actionContext: ArtifactActionContext = {
+  const actionContext: ArtifactActionContext<M> = {
     content: artifact.content,
     handleVersionChange,
     currentVersionIndex,

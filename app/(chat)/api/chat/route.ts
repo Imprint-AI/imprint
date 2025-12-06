@@ -65,14 +65,12 @@ const getTokenlensCatalog = cache(
   { revalidate: 24 * 60 * 60 } // 24 hours
 )
 
-export function getStreamContext() {
+export function getStreamContext(): ResumableStreamContext | null {
   if (!globalStreamContext) {
     try {
-      globalStreamContext = createResumableStreamContext({
-        waitUntil: after
-      })
-    } catch (error: any) {
-      if (error.message.includes('REDIS_URL')) {
+      globalStreamContext = createResumableStreamContext({ waitUntil: after })
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message.includes('REDIS_URL')) {
         console.log(
           ' > Resumable streams are disabled due to missing REDIS_URL'
         )

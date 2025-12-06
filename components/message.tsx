@@ -7,7 +7,7 @@ import type { ChatMessage } from '@/lib/types'
 import { cn, sanitizeText } from '@/lib/utils'
 import { useDataStream } from './data-stream-provider'
 import { DocumentToolResult } from './document'
-import { DocumentPreview } from './document-preview'
+import { ArgsType, DocumentPreview } from './document-preview'
 import { MessageContent } from './elements/message'
 import { Response } from './elements/response'
 import {
@@ -220,7 +220,7 @@ const PurePreviewMessage = ({
               return (
                 <div className="relative" key={toolCallId}>
                   <DocumentPreview
-                    args={{ ...part.output, isUpdate: true }}
+                    args={{ ...part.output, isUpdate: true } as ArgsType}
                     isReadonly={isReadonly}
                     result={part.output}
                   />

@@ -1,14 +1,11 @@
-import type { LanguageModel } from 'ai'
+import type { LanguageModelV2 } from '@ai-sdk/provider'
 
-const createMockModel = (): LanguageModel => {
+const createMockModel = (): LanguageModelV2 => {
   return {
     specificationVersion: 'v2',
     provider: 'mock',
     modelId: 'mock-model',
-    defaultObjectGenerationMode: 'tool',
-    supportedUrls: [],
-    supportsImageUrls: false,
-    supportsStructuredOutputs: false,
+    supportedUrls: {},
     doGenerate: async () => ({
       rawCall: { rawPrompt: null, rawSettings: {} },
       finishReason: 'stop',
@@ -29,7 +26,7 @@ const createMockModel = (): LanguageModel => {
       }),
       rawCall: { rawPrompt: null, rawSettings: {} }
     })
-  } as unknown as LanguageModel
+  }
 }
 
 export const chatModel = createMockModel()
