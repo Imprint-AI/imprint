@@ -1,6 +1,6 @@
 import { smoothStream, streamText } from 'ai'
 import { updateDocumentPrompt } from '@/lib/ai/prompts'
-import { myProvider } from '@/lib/ai/providers'
+import { getMyProvider } from '@/lib/ai/providers'
 import { createDocumentHandler } from '@/lib/artifacts/server'
 
 export const textDocumentHandler = createDocumentHandler<'text'>({
@@ -8,6 +8,7 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
   onCreateDocument: async ({ title, dataStream }) => {
     let draftContent = ''
 
+    const myProvider = await getMyProvider()
     const { fullStream } = streamText({
       model: myProvider.languageModel('artifact-model'),
       system:

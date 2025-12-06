@@ -5,7 +5,7 @@ import { getDocumentById, saveSuggestions } from '@/lib/db/queries'
 import type { Suggestion } from '@/lib/db/schema'
 import type { ChatMessage } from '@/lib/types'
 import { generateUUID } from '@/lib/utils'
-import { myProvider } from '../providers'
+import { getMyProvider } from '../providers'
 
 type RequestSuggestionsProps = {
   session: Session
@@ -35,6 +35,7 @@ export const requestSuggestions = ({
         'userId' | 'createdAt' | 'documentCreatedAt'
       >[] = []
 
+      const myProvider = await getMyProvider()
       const { elementStream } = streamObject({
         model: myProvider.languageModel('artifact-model'),
         system:

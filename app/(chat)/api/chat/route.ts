@@ -21,7 +21,7 @@ import type { VisibilityType } from '@/components/visibility-selector'
 import { entitlementsByUserType } from '@/lib/ai/entitlements'
 import type { ChatModel } from '@/lib/ai/models'
 import { type RequestHints, systemPrompt } from '@/lib/ai/prompts'
-import { myProvider } from '@/lib/ai/providers'
+import { getMyProvider } from '@/lib/ai/providers'
 import { createDocument } from '@/lib/ai/tools/create-document'
 import { getWeather } from '@/lib/ai/tools/get-weather'
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions'
@@ -178,6 +178,7 @@ export async function POST(request: Request) {
 
     let finalMergedUsage: AppUsage | undefined
 
+    const myProvider = await getMyProvider()
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
         const result = streamText({

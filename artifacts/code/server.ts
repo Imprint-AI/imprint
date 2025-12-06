@@ -1,7 +1,7 @@
 import { streamObject } from 'ai'
 import { z } from 'zod'
 import { codePrompt, updateDocumentPrompt } from '@/lib/ai/prompts'
-import { myProvider } from '@/lib/ai/providers'
+import { getMyProvider } from '@/lib/ai/providers'
 import { createDocumentHandler } from '@/lib/artifacts/server'
 
 export const codeDocumentHandler = createDocumentHandler<'code'>({
@@ -9,6 +9,7 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
   onCreateDocument: async ({ title, dataStream }) => {
     let draftContent = ''
 
+    const myProvider = await getMyProvider()
     const { fullStream } = streamObject({
       model: myProvider.languageModel('artifact-model'),
       system: codePrompt,

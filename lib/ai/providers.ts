@@ -6,26 +6,27 @@ import {
 } from 'ai'
 import { isTestEnvironment } from '../constants'
 
-export const myProvider = isTestEnvironment
-  ? (() => {
-      const loadMockModels = async () => {
-        const { chatModel, reasoningModel, titleModel, artifactModel } =
-          await import('./models.mock')
+let providerInstance: any = null
 
-        return customProvider({
-          languageModels: {
-            'chat-model': chatModel as unknown as any,
-            'chat-model-reasoning': reasoningModel as unknown as any,
-            'title-model': titleModel as unknown as any,
-            'artifact-model': artifactModel as unknown as any
-          }
-        })
+export const getMyProvider = async () => {
+  if (providerInstance) {
+    return providerInstance
+  }
+
+  if (isTestEnvironment) {
+    const { artifactModel, chatModel, reasoningModel, titleModel } =
+      await import('./models.mock')
+
+    providerInstance = customProvider({
+      languageModels: {
+        'chat-model': chatModel as unknown as any,
+        'chat-model-reasoning': reasoningModel as unknown as any,
+        'title-model': titleModel as unknown as any,
+        'artifact-model': artifactModel as unknown as any
       }
-
-      // 注意：这里返回一个 Promise
-      return loadMockModels()
-    })()
-  : customProvider({
+    })
+  } else {
+    providerInstance = customProvider({
       languageModels: {
         'chat-model': gateway.languageModel('xai/grok-2-vision-1212'),
         'chat-model-reasoning': wrapLanguageModel({
@@ -36,3 +37,7 @@ export const myProvider = isTestEnvironment
         'artifact-model': gateway.languageModel('xai/grok-2-1212')
       }
     })
+  }
+
+  return providerInstance
+}
